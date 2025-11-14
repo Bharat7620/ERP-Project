@@ -1,0 +1,113 @@
+<div class="dashboard-container">
+  <h2 class="mb-4">Dashboard Overview</h2>
+
+  <div *ngIf="loading" class="text-center">
+    <p>Loading dashboard data...</p>
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #4CAF50;">📋</div>
+          <div class="stat-details">
+            <h3>{{ stats.totalLOIs }}</h3>
+            <p>Total LOIs</p>
+            <small>{{ stats.pendingLOIs }} Pending</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #2196F3;">🛒</div>
+          <div class="stat-details">
+            <h3>{{ stats.totalPOs }}</h3>
+            <p>Purchase Orders</p>
+            <small>{{ stats.pendingPOs }} Pending</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #FF9800;">📦</div>
+          <div class="stat-details">
+            <h3>{{ stats.totalStock }}</h3>
+            <p>Stock Items</p>
+            <small>In Inventory</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: #9C27B0;">🚚</div>
+          <div class="stat-details">
+            <h3>{{ stats.totalDispatches }}</h3>
+            <p>Dispatches</p>
+            <small>Total Records</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5>Recent LOIs</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>LOI No</th>
+                  <th>Customer</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let loi of recentLOIs">
+                  <td>{{ loi.loiNumber }}</td>
+                  <td>{{ loi.customerName }}</td>
+                  <td><span class="badge" [ngClass]="loi.status === 'Completed' ? 'bg-success' : 'bg-warning'">{{ loi.status }}</span></td>
+                </tr>
+                <tr *ngIf="recentLOIs.length === 0">
+                  <td colspan="3" class="text-center">No LOIs found</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5>Recent Purchase Orders</h5>
+          </div>
+          <div class="card-body">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Order No</th>
+                  <th>Location</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let po of recentPOs">
+                  <td>{{ po.orderNo }}</td>
+                  <td>{{ po.location }}</td>
+                  <td><span class="badge" [ngClass]="po.status === 'Completed' ? 'bg-success' : 'bg-warning'">{{ po.status }}</span></td>
+                </tr>
+                <tr *ngIf="recentPOs.length === 0">
+                  <td colspan="3" class="text-center">No Purchase Orders found</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

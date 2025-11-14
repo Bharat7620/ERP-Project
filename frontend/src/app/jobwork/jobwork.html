@@ -1,0 +1,286 @@
+<!-- jobwork.html -->
+<div class="tabs-container">
+  <button [class.active]="activeTab==='issue'" (click)="switchTab('issue')">📤 Issue Challan</button>
+  <button [class.active]="activeTab==='receive'" (click)="switchTab('receive')">📥 Receive Challan</button>
+  <button [class.active]="activeTab==='list'" (click)="switchTab('list')">📋 All Challans</button>
+  <button [class.active]="activeTab==='invoices'" (click)="switchTab('invoices')">💰 Invoices</button>
+</div>
+
+<!-- ISSUE CHALLAN -->
+<div *ngIf="activeTab==='issue'" class="jobwork-container">
+  <h2 class="jobwork-title">Issue Jobwork Challan</h2>
+  <form (ngSubmit)="issueChallanSubmit()" #issueForm="ngForm">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Challan No<span class="required">*</span></label>
+        <input type="text" name="challanNo" [(ngModel)]="issueChallan.challanNo" required placeholder="e.g., 01/315" />
+      </div>
+      <div class="form-group">
+        <label>Challan Date<span class="required">*</span></label>
+        <input type="date" name="challanDate" [(ngModel)]="issueChallan.challanDate" required />
+      </div>
+      <div class="form-group">
+        <label>Supplier<span class="required">*</span></label>
+        <input type="text" name="supplier" [(ngModel)]="issueChallan.supplier" required placeholder="Supplier Name" />
+      </div>
+      <div class="form-group">
+        <label>Vehicle No</label>
+        <input type="text" name="vehicleNo" [(ngModel)]="issueChallan.vehicleNo" placeholder="MH49AT3048" />
+      </div>
+    </div>
+
+    <h3 class="elements-title">📦 Items to Issue</h3>
+    <div class="elements-header">
+      <div>Item Code</div>
+      <div>Description</div>
+      <div>Qty</div>
+      <div>Weight</div>
+      <div>UOM</div>
+      <div>Remarks</div>
+      <div>Action</div>
+    </div>
+
+    <div *ngFor="let line of issueChallan.lines; let i=index" class="element-card-jw">
+      <input type="text" [(ngModel)]="line.itemCode" name="itemCode{{i}}" placeholder="MS ANGLE 90X90X6" required />
+      <input type="text" [(ngModel)]="line.description" name="desc{{i}}" placeholder="Description" required />
+      <input type="number" [(ngModel)]="line.qtyIssued" name="qty{{i}}" placeholder="Quantity" min="0" required />
+      <input type="number" [(ngModel)]="line.weight" name="weight{{i}}" placeholder="Weight" min="0" required />
+      <select [(ngModel)]="line.uom" name="uom{{i}}">
+        <option value="MT">MT</option>
+        <option value="KG">KG</option>
+        <option value="PCS">PCS</option>
+      </select>
+      <input type="text" [(ngModel)]="line.remarks" name="remarks{{i}}" placeholder="Remarks" />
+      <button type="button" class="remove-btn" (click)="removeIssueLine(i)">Remove</button>
+    </div>
+
+    <div class="summary-row">
+      <strong>Total Qty: {{ getTotalIssuedQty() }} | Total Weight: {{ getTotalIssuedWeight() }} MT</strong>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="add-btn" (click)="addIssueLine()">+ Add Item</button>
+      <button type="submit" class="submit-btn" [disabled]="issueForm.invalid">Issue Challan</button>
+    </div>
+
+    <div *ngIf="message" class="success-msg">{{ message }}</div>
+  </form>
+</div>
+
+<!-- RECEIVE CHALLAN -->
+<div *ngIf="activeTab==='receive'" class="jobwork-container">
+  <h2 class="jobwork-title">Record Jobwork Receipt</h2>
+  <form (ngSubmit)="recordReceipt()" #receiptFormRef="ngForm">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Challan No<span class="required">*</span></label>
+        <input type="text" name="challanNo" [(ngModel)]="receiptForm.challanNo" required placeholder="e.g., 01/315" />
+      </div>
+      <div class="form-group">
+        <label>Receipt Date<span class="required">*</span></label>
+        <input type="date" name="receiptDate" [(ngModel)]="receiptForm.receiptDate" required />
+      </div>
+      <div class="form-group">
+        <label>Qty Received<span class="required">*</span></label>
+        <input type="number" name="qtyReceived" [(ngModel)]="receiptForm.qtyReceived" required min="0" />
+      </div>
+      <div class="form-group">
+        <label>Job Charge (₹)</label>
+        <input type="number" name="jobCharge" [(ngModel)]="receiptForm.jobCharge" min="0" />
+      </div>
+    </div>
+
+    <h3 class="elements-title">⚖️ Weight Reconciliation</h3>
+    <div class="weight-section">
+      <div class="weight-card">
+        <label>Actual Weight (Received)</label>
+        <input type="number" [(ngModel)]="receiptForm.actualWeight" name="actualWeight" placeholder="Weight as per receipt" required min="0" />
+      </div>
+      <div class="weight-card">
+        <label>KATA Weight (Theoretical Loss)</label>
+        <input type="number" [(ngModel)]="receiptForm.kataWeight" name="kataWeight" placeholder="Theoretical loss/waste" required min="0" />
+      </div>
+      <div class="weight-card highlight">
+        <label>Difference</label>
+        <input type="number" [(ngModel)]="receiptForm.difference" name="difference" readonly placeholder="Auto calculated" />
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group full-width">
+        <label>Remarks</label>
+        <textarea name="remarks" [(ngModel)]="receiptForm.remarks" placeholder="Any remarks about the receipt..." style="padding: 10px; border: 1px solid #ccc; border-radius: 8px; width: 100%; min-height: 80px;"></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="submit-btn" [disabled]="receiptFormRef.invalid">Record Receipt</button>
+    </div>
+
+    <div *ngIf="message" class="success-msg">{{ message }}</div>
+  </form>
+</div>
+
+<!-- LIST CHALLANS -->
+<div *ngIf="activeTab==='list'" class="jobwork-list-container">
+  <h2>Jobwork Challans</h2>
+
+  <div class="filter-section">
+    <div class="filter-row">
+      <input type="text" [(ngModel)]="searchChallanNo" placeholder="Search Challan No..." (change)="applyFilters()" class="filter-input" />
+      <input type="text" [(ngModel)]="filterSupplier" placeholder="Supplier..." (change)="applyFilters()" class="filter-input" />
+      <select [(ngModel)]="filterStatus" (change)="applyFilters()" class="filter-input">
+        <option value="">All Status</option>
+        <option value="issued">Issued</option>
+        <option value="pending_return">Pending Return</option>
+        <option value="returned">Returned</option>
+        <option value="completed">Completed</option>
+      </select>
+      <button class="btn-filter" (click)="clearFilters()">Clear</button>
+      <button class="btn-filter" (click)="exportToExcel()">📥 Export</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading">Loading...</div>
+  <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+
+  <table *ngIf="!loading && filteredChallans.length > 0" class="jobwork-table">
+    <thead>
+      <tr>
+        <th>Challan No</th>
+        <th>Date</th>
+        <th>Supplier</th>
+        <th>Vehicle</th>
+        <th>Items</th>
+        <th>Total Qty</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let challan of filteredChallans">
+        <td><strong>{{ challan.challanNo }}</strong></td>
+        <td>{{ challan.challanDate }}</td>
+        <td>{{ challan.supplier }}</td>
+        <td>{{ challan.vehicleNo || '-' }}</td>
+        <td>{{ challan.lines.length }}</td>
+        <td>{{ getTotalIssuedQty() }}</td>
+        <td>
+          <span [ngClass]="{'status-issued': challan.status==='issued', 'status-pending': challan.status==='pending_return', 'status-returned': challan.status==='returned', 'status-completed': challan.status==='completed'}">
+            {{ challan.status | uppercase }}
+          </span>
+        </td>
+        <td>
+          <button class="view-btn" (click)="openDetailModal(challan)">View</button>
+          <button class="print-btn" (click)="printChallan(challan)">🖨️ Print</button>
+          <button class="delete-btn" (click)="deleteChallan(challan.id)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && filteredChallans.length === 0" class="no-data">No challans found</div>
+</div>
+
+<!-- INVOICES (RECEIPTS) -->
+<div *ngIf="activeTab==='invoices'" class="jobwork-list-container">
+  <h2>Jobwork Invoices</h2>
+
+  <div class="filter-section">
+    <div class="filter-row">
+      <select [(ngModel)]="filterReceiptStatus" (change)="applyReceiptFilters()" class="filter-input">
+        <option value="">All Status</option>
+        <option value="pending">Pending Approval</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <button class="btn-filter" (click)="clearReceiptFilters()">Clear</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading">Loading...</div>
+
+  <table *ngIf="!loading && filteredReceipts.length > 0" class="invoice-table">
+    <thead>
+      <tr>
+        <th>Challan No</th>
+        <th>Receipt Date</th>
+        <th>Qty Received</th>
+        <th>Actual Weight</th>
+        <th>KATA Weight</th>
+        <th>Difference</th>
+        <th>Job Charge (₹)</th>
+        <th>Penalty/Bonus</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let receipt of filteredReceipts">
+        <td><strong>{{ receipt.challanNo }}</strong></td>
+        <td>{{ receipt.receiptDate }}</td>
+        <td>{{ receipt.qtyReceived }}</td>
+        <td>{{ receipt.actualWeight }}</td>
+        <td>{{ receipt.kataWeight }}</td>
+        <td [ngClass]="{'difference-positive': getWeightDifference(receipt) > 0, 'difference-negative': getWeightDifference(receipt) < 0}">
+          {{ getWeightDifference(receipt) | number: '1.2-2' }}
+        </td>
+        <td>{{ receipt.jobCharge }}</td>
+        <td [ngClass]="{'penalty-color': getWeightDifference(receipt) > 0, 'bonus-color': getWeightDifference(receipt) < 0}">
+          {{ getPenaltyOrBonus(receipt) }}
+        </td>
+        <td>
+          <span [ngClass]="{'status-pending': receipt.status==='pending', 'status-approved': receipt.status==='approved', 'status-rejected': receipt.status==='rejected'}">
+            {{ receipt.status | uppercase }}
+          </span>
+        </td>
+        <td>
+          <button *ngIf="receipt.status === 'pending'" class="approve-btn" (click)="approvReceipt(receipt.id)">✓ Approve</button>
+          <button *ngIf="receipt.status === 'approved'" class="delete-btn" disabled>Approved</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && filteredReceipts.length === 0" class="no-data">No invoices found</div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal" *ngIf="showDetailModal">
+  <div class="modal-content">
+    <span class="close-btn" (click)="closeDetailModal()">&times;</span>
+    <h3>Challan: {{ selectedChallan?.challanNo }}</h3>
+    <div class="modal-header">
+      <p><strong>Date:</strong> {{ selectedChallan?.challanDate }}</p>
+      <p><strong>Supplier:</strong> {{ selectedChallan?.supplier }}</p>
+      <p><strong>Vehicle:</strong> {{ selectedChallan?.vehicleNo }}</p>
+      <p><strong>Status:</strong> {{ selectedChallan?.status | uppercase }}</p>
+    </div>
+
+    <h4>Items Issued</h4>
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th>Item Code</th>
+          <th>Description</th>
+          <th>Qty</th>
+          <th>Weight</th>
+          <th>UOM</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let line of selectedChallan?.lines">
+          <td>{{ line.itemCode }}</td>
+          <td>{{ line.description }}</td>
+          <td>{{ line.qtyIssued }}</td>
+          <td>{{ line.weight }}</td>
+          <td>{{ line.uom }}</td>
+          <td>{{ line.remarks || '-' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+

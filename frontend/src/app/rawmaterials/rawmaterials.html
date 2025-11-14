@@ -1,0 +1,41 @@
+<div class="raw-material-container">
+  <h2>All GRNs</h2>
+
+  <div *ngIf="loading" class="loading-msg">Loading GRNs...</div>
+  <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+
+  <div *ngFor="let grn of grns" class="grn-card">
+    <div class="grn-header">
+      <h3>{{ grn.grnNumber }}</h3>
+      <span>Order No: {{ grn.orderNo || 'N/A' }}</span>
+      <span>Location: {{ grn.location || 'N/A' }}</span>
+      <span>Vehicle: {{ grn.vehicleNo || 'N/A' }}</span>
+      <span>Date: {{ grn.grnDate }}</span>
+    </div>
+
+    <table class="grn-table">
+      <thead>
+        <tr>
+          <th>Grade</th>
+          <th>Section</th>
+          <th>Material</th>
+          <th>Total Qty</th>
+          <th>Total Received till now</th>
+          <th>Received Qty</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of grn.items">
+          <td>{{ item.grade }}</td>
+          <td>{{ item.section }}</td>
+          <td>{{ item.material }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.alreadyReceived }}</td>
+          <td>{{ item.receivedQuantity }}</td>
+          <td>{{ item.remarks }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

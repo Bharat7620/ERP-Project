@@ -1,0 +1,180 @@
+<div class="tabs-container">
+  <button [class.active]="activeTab==='create'" (click)="switchTab('create')">+ Create PO</button>
+  <button [class.active]="activeTab==='list'" (click)="switchTab('list')">📄 All POs</button>
+</div>
+
+<!-- CREATE PO -->
+<div *ngIf="activeTab==='create'" class="po-container">
+  <h2 class="po-title">Create Purchase Order</h2>
+  <form (ngSubmit)="createPO()" #poForm="ngForm">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Order No</label>
+        <input type="text" name="orderNo" [(ngModel)]="po.orderNo" required placeholder="Enter order number" />
+      </div>
+      <div class="form-group">
+        <label>Party</label>
+        <input type="text" name="party" [(ngModel)]="po.party" required placeholder="Enter party name" />
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" name="date" [(ngModel)]="po.date" required />
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" name="location" [(ngModel)]="po.location" required placeholder="e.g. Butibori / Jabalpur" />
+      </div>
+    </div>
+
+    <h3 class="elements-title">Elements</h3>
+    <div class="elements-header grid">
+      <div>Material</div>
+      <div>Grade</div>
+      <div>Section</div>
+      <div>Width (mm)</div>
+      <div>Length (mm)</div>
+      <div>PCS</div>
+      <div>Quantity</div>
+      <div>Type</div>
+      <div>Action</div>
+    </div>
+
+    <div *ngFor="let elem of po.elements; let i=index" class="element-card grid">
+      <input type="text" [(ngModel)]="elem.material" name="material{{i}}" placeholder="Material" required/>
+      <input type="text" [(ngModel)]="elem.grade" name="grade{{i}}" placeholder="Grade" required/>
+      <input type="text" [(ngModel)]="elem.section" name="section{{i}}" placeholder="Section" />
+      <input type="number" [(ngModel)]="elem.steelWidth" name="steelWidth{{i}}" placeholder="Width"/>
+      <input type="number" [(ngModel)]="elem.length" name="length{{i}}" placeholder="Length"/>
+      <input type="number" [(ngModel)]="elem.pcs" name="pcs{{i}}" placeholder="PCS" min="0"/>
+      <input type="number" [(ngModel)]="elem.quantity" name="quantity{{i}}" placeholder="Qty" min="0" required/>
+      <input type="text" [(ngModel)]="elem.type" name="type{{i}}" placeholder="Type (KG/PCS/LENGTH)" required/>
+      <div class="element-actions">
+        <button type="button" class="remove-btn" (click)="removeElement(i)">Remove</button>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="add-btn" (click)="addElement()">+ Add Element</button>
+      <button type="submit" class="submit-btn" [disabled]="poForm.invalid">Submit PO</button>
+    </div>
+
+    <div *ngIf="message" class="success-msg">{{ message }}</div>
+  </form>
+</div>
+
+<hr/>
+
+<!-- LIST PO -->
+<div *ngIf="activeTab==='list'" class="po-list-container">
+  <h2>All POs</h2>
+  <div *ngIf="loading">Loading...</div>
+  <div *ngIf="errorMessage">{{ errorMessage }}</div>
+  <table *ngIf="!loading && purchaseOrders.length>0" class="po-table">
+    <thead>
+      <tr>
+        <th>ID</th><th>Order No</th><th>Date</th><th>Party</th><th>Location</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let po of purchaseOrders">
+        <td>{{ po.id }}</td>
+        <td>{{ po.orderNo }}</td>
+        <td>{{ po.date }}</td>
+        <td>{{ po.party }}</td>
+        <td>{{ po.location || '-' }}</td>
+        <td>
+          <span [ngClass]="{'status-received':po.status==='Received','status-pending':po.status!=='Received'}">
+            {{ po.status }}
+          </span>
+        </td>
+        <td>
+          <button class="view-btn" (click)="openPOModal(po)">View</button>
+          <button class="grn-btn" (click)="openGRNModal(po)">+ GRN</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- PO DETAILS MODAL -->
+<div class="modal" *ngIf="showPOModal">
+  <div class="modal-content">
+    <span class="close-btn" (click)="closePOModal()">&times;</span>
+    <h3>PO: {{ selectedPO?.orderNo }}</h3>
+    <p><strong>Party:</strong> {{ selectedPO?.party }}</p>
+    <p><strong>Date:</strong> {{ selectedPO?.date }}</p>
+    <p><strong>Location:</strong> {{ selectedPO?.location }}</p>
+    <p><strong>Status:</strong> {{ selectedPO?.status }}</p>
+    <h4>Elements</h4>
+    <table class="po-elements-table">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Grade</th><th>Section</th><th>Width</th><th>Length</th>
+          <th>PCS</th><th>Qty</th><th>Received</th><th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of selectedPO?.elements">
+          <td>{{ e.material }}</td>
+          <td>{{ e.grade }}</td><td>{{ e.section }}</td><td>{{ e.steelWidth }}</td><td>{{ e.length }}</td>
+          <td>{{ e.pcs }}</td><td>{{ e.quantity }}</td><td>{{ e.receivedQuantity || 0 }}</td><td>{{ e.type }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ✅ GRN MODAL -->
+<div class="modal" *ngIf="showGRNModal">
+  <div class="modal-content">
+    <span class="close-btn" (click)="closeGRNModal()">&times;</span>
+    <h3>GRN for PO: {{ selectedPOForGRN?.orderNo }}</h3>
+
+    <div class="grn-meta">
+      <label>GRN No</label>
+      <input [(ngModel)]="grnNumber" name="grnNumber" />
+      <label>Vehicle</label>
+      <input [(ngModel)]="vehicleNo" name="vehicleNo" />
+      <label>Date</label>
+      <input type="date" [(ngModel)]="grnDate" name="grnDate" />
+    </div>
+
+    <h4>Update Received Quantities</h4>
+    <table class="po-elements-table">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Grade</th>
+          <th>Section</th>
+          <th>Width (mm)</th>
+          <th>Length (mm)</th>
+          <th>Qty Left</th>
+          <th>Received</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of selectedPOForGRN?.elements" [ngClass]="{'row-complete': qtyLeftFor(e) === 0}">
+          <td>{{ e.material }}</td>
+          <td>{{ e.grade }}</td>
+          <td>{{ e.section }}</td>
+          <td>{{ e.steelWidth }}</td>
+          <td>{{ e.length }}</td>
+          <td>{{ qtyLeftFor(e) }}</td>
+          <td>
+            <input type="number"
+                   [(ngModel)]="e.receivedQuantity"
+                   name="rec{{ e.id }}"
+                   min="0"
+                   [max]="qtyLeftFor(e)"
+                   [disabled]="qtyLeftFor(e) === 0" />
+          </td>
+          <td><input type="text" [(ngModel)]="e.remarks" name="rem{{ e.id }}" /></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button class="submit-btn" (click)="submitGRN()">Create GRN</button>
+  </div>
+</div>

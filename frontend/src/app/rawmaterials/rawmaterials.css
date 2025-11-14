@@ -1,0 +1,115 @@
+/* Container */
+.raw-material-container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 40px 0;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Page Title */
+.raw-material-container h2 {
+  text-align: center;
+  color: #007bff;
+  font-size: 28px;
+  margin-bottom: 25px;
+  font-weight: 700;
+}
+
+/* Each GRN card */
+.grn-card {
+  background: #fff;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: 0.3s;
+}
+.grn-card:hover {
+  box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+}
+
+/* GRN Header */
+.grn-header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+.grn-header h3 {
+  color: #6f42c1;
+  margin: 0;
+}
+.grn-header span {
+  font-weight: 600;
+  color: #555;
+}
+
+/* GRN Table */
+.grn-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+}
+.grn-table th, .grn-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+.grn-table th {
+  background: #f4f6f9;
+  font-weight: 600;
+  color: #333;
+}
+.grn-table td {
+  color: #555;
+}
+
+/* Highlight received/pending if needed */
+.status-received {
+  color: green;
+  font-weight: 600;
+}
+.status-pending {
+  color: orange;
+  font-weight: 600;
+}
+
+/* Loading/Error messages */
+.loading-msg, .error-msg {
+  text-align: center;
+  font-weight: 600;
+  margin-top: 15px;
+}
+.loading-msg { color: #007bff; }
+.error-msg { color: red; }
+
+/* Responsive Adjustments */
+@media(max-width: 900px) {
+  .grn-table, .grn-table th, .grn-table td {
+    font-size: 13px;
+  }
+}
+@media(max-width: 600px) {
+  .grn-card {
+    padding: 15px;
+  }
+  .grn-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .grn-table th, .grn-table td {
+    display: block;
+    text-align: left;
+    padding: 6px;
+  }
+  .grn-table thead {
+    display: none;
+  }
+  .grn-table tr {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ccc;
+  }
+}

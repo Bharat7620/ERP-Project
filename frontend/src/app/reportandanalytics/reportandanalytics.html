@@ -1,0 +1,74 @@
+<div class="reports-container">
+  <h2 class="mb-4">Reports & Analytics</h2>
+
+  <!-- Filters -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5>Stock Report Filters</h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4">
+          <label>Location</label>
+          <select class="form-control" [(ngModel)]="filters.location" (change)="applyFilters()">
+            <option value="">All Locations</option>
+            <option *ngFor="let loc of locations" [value]="loc">{{ loc }}</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label>Material</label>
+          <select class="form-control" [(ngModel)]="filters.material" (change)="applyFilters()">
+            <option value="">All Materials</option>
+            <option *ngFor="let mat of materials" [value]="mat">{{ mat }}</option>
+          </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <button class="btn btn-secondary" (click)="resetFilters()">Reset Filters</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock Table -->
+  <div class="card">
+    <div class="card-header">
+      <h5>Stock Report ({{ filteredStock.length }} items)</h5>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center">
+        <p>Loading stock data...</p>
+      </div>
+      <div *ngIf="!loading" class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th>Grade</th>
+              <th>Section</th>
+              <th>Length</th>
+              <th>Steel Width</th>
+              <th>Type</th>
+              <th>Location</th>
+              <th>Quantity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let stock of filteredStock">
+              <td>{{ stock.material }}</td>
+              <td>{{ stock.grade }}</td>
+              <td>{{ stock.section }}</td>
+              <td>{{ stock.length }}</td>
+              <td>{{ stock.steelWidth }}</td>
+              <td>{{ stock.type }}</td>
+              <td>{{ stock.location }}</td>
+              <td>{{ stock.totalQuantity }}</td>
+            </tr>
+            <tr *ngIf="filteredStock.length === 0">
+              <td colspan="8" class="text-center">No stock data found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

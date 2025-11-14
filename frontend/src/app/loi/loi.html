@@ -1,0 +1,147 @@
+<div class="tabs-container">
+  <button [class.active]="activeTab==='create'" (click)="switchTab('create')">+ Create LOI</button>
+  <button [class.active]="activeTab==='list'" (click)="switchTab('list')">📄 All LOIs</button>
+</div>
+
+<!-- CREATE LOI -->
+<div *ngIf="activeTab==='create'" class="loi-container">
+  <h2 class="title">Create Letter of Intent (LOI)</h2>
+
+  <form (ngSubmit)="createLOI()" #loiForm="ngForm">
+    <div class="form-row">
+      <div class="form-group">
+        <label>LOI No</label>
+        <input type="text" name="loiNumber" [(ngModel)]="loi.loiNumber" placeholder="LOI-YYYY-NNNN" required />
+      </div>
+      <div class="form-group">
+        <label>Customer</label>
+        <input type="text" name="customerName" [(ngModel)]="loi.customerName" placeholder="Enter customer name" required />
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" name="location" [(ngModel)]="loi.location" placeholder="Butibori / Jabalpur" required />
+      </div>
+      <div class="form-group">
+        <label>LOI Date</label>
+        <input type="date" name="loiDate" [(ngModel)]="loi.loiDate" required />
+      </div>
+    </div>
+
+    <h3 class="items-title">Items</h3>
+
+    <div class="items-header grid">
+      <div>Material</div>
+      <div>Grade</div>
+      <div>Section</div>
+      <div>Length (mm)</div>
+      <div>Quantity</div>
+      <div>Unit</div>
+      <div>Action</div>
+    </div>
+
+    <div *ngFor="let it of loi.items; let i=index" class="item-row grid">
+      <input type="text" [(ngModel)]="it.material" name="material{{i}}" placeholder="Angle / Channel / ..." required />
+      <input type="text" [(ngModel)]="it.grade" name="grade{{i}}" placeholder="MS / HT ..." required />
+      <input type="text" [(ngModel)]="it.section" name="section{{i}}" placeholder="e.g., 80x80x6" required />
+      <input type="number" [(ngModel)]="it.length" name="length{{i}}" min="0" placeholder="6000" required />
+      <input type="number" [(ngModel)]="it.quantity" name="qty{{i}}" min="0" step="0.001" placeholder="Qty" required />
+      <select [(ngModel)]="it.unit" name="unit{{i}}">
+        <option value="TON">TON</option>
+        <option value="KG">KG</option>
+        <option value="PCS">PCS</option>
+      </select>
+
+      <div class="row-actions">
+        <button type="button" class="btn-danger" (click)="removeItem(i)">Remove</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn-primary" (click)="addItem()">+ Add Item</button>
+      <button type="submit" class="btn-success" >Submit LOI</button>
+    </div>
+
+    <div *ngIf="message" class="success-msg">{{ message }}</div>
+  </form>
+</div>
+
+<hr />
+
+<!-- LIST LOIs -->
+<div *ngIf="activeTab==='list'" class="loi-list-container">
+  <h2>All LOIs</h2>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <table *ngIf="!loading && lois.length" class="loi-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>LOI No</th>
+        <th>Date</th>
+        <th>Customer</th>
+        <th>Location</th>
+        <th>Status</th>
+        <th style="min-width:220px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of lois">
+        <td>{{ row.id }}</td>
+        <td>{{ row.loiNumber }}</td>
+        <td>{{ row.loiDate }}</td>
+        <td>{{ row.customerName }}</td>
+        <td>{{ row.location }}</td>
+        <td><span [ngClass]="badgeClass(row.status)">{{ row.status }}</span></td>
+        <td>
+          <button class="btn-info" (click)="openLOIModal(row)">View</button>
+          <button class="btn-outline" (click)="updateStatus(row, 'Pending')">Pending</button>
+          <button class="btn-outline" (click)="updateStatus(row, 'Planned')">Planned</button>
+          <button class="btn-outline" (click)="updateStatus(row, 'Completed')">Completed</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && !lois.length" class="no-data">No LOIs found.</div>
+</div>
+
+<!-- LOI DETAILS MODAL -->
+<div class="modal" *ngIf="showLOIModal">
+  <div class="modal-content">
+    <span class="close-btn" (click)="closeLOIModal()">&times;</span>
+
+    <h3>LOI: {{ selectedLOI?.loiNumber }}</h3>
+    <div class="meta">
+      <div><strong>Customer:</strong> {{ selectedLOI?.customerName }}</div>
+      <div><strong>Location:</strong> {{ selectedLOI?.location }}</div>
+      <div><strong>Date:</strong> {{ selectedLOI?.loiDate }}</div>
+      <div><strong>Status:</strong> <span [ngClass]="badgeClass(selectedLOI?.status)">{{ selectedLOI?.status }}</span></div>
+    </div>
+
+    <h4>Items</h4>
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>Grade</th>
+          <th>Section</th>
+          <th>Length (mm)</th>
+          <th>Qty</th>
+          <th>Unit</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let it of selectedLOI?.items">
+          <td>{{ it.material }}</td>
+          <td>{{ it.grade }}</td>
+          <td>{{ it.section }}</td>
+          <td>{{ it.length }}</td>
+          <td>{{ it.quantity }}</td>
+          <td>{{ it.unit }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

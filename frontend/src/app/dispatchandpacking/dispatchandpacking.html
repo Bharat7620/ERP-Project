@@ -1,0 +1,202 @@
+<div class="container-fluid">
+  <h2 class="my-4">Dispatch Management</h2>
+
+  <p *ngIf="message" class="alert alert-info">{{ message }}</p>
+
+  <!-- Action Buttons -->
+  <div class="d-flex justify-content-between mb-3">
+    <button class="btn btn-success" routerLink="/packing">← Go to Packing</button>
+    <div class="alert alert-info mb-0">
+      🚚 Select packed items to create dispatch entries.
+    </div>
+  </div>
+
+  <!-- Packed Items Ready for Dispatch -->
+  <div class="card mb-4" *ngIf="packedItems.length > 0">
+    <div class="card-body">
+      <h5 class="card-title">✅ Packed Items (Ready for Dispatch)</h5>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover table-sm">
+          <thead class="thead-dark">
+            <tr>
+              <th>PO No</th>
+              <th>Customer</th>
+              <th>Grade/Section</th>
+              <th>Length</th>
+              <th>No. Of Pcs</th>
+              <th>Qty (MT)</th>
+              <th>Heat No</th>
+              <th>Packing Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of packedItems">
+              <td>{{ item.poNo }}</td>
+              <td>{{ item.customer }}</td>
+              <td>{{ item.gradeSection }}</td>
+              <td>{{ item.length }}</td>
+              <td>{{ item.noOfPcs }}</td>
+              <td>{{ item.qtyInMt }}</td>
+              <td>{{ item.heatNo }}</td>
+              <td>{{ item.packingDate | date:'dd-MM-yyyy' }}</td>
+              <td>
+                <button class="btn btn-sm btn-success" (click)="openDispatchFormFromPacking(item)">
+                  🚚 Create Dispatch
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Dispatch Records -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Dispatch Records</h5>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="thead-dark">
+            <tr>
+              <th>Dispatch ID</th>
+              <th>PO No</th>
+              <th>Customer</th>
+              <th>Section</th>
+              <th>Qty (MT)</th>
+              <th>Vehicle No</th>
+              <th>From Location</th>
+              <th>To Destination</th>
+              <th>Status</th>
+              <th>Dispatch Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of dispatches">
+              <td>{{ d.dispatchId }}</td>
+              <td>{{ d.poNo }}</td>
+              <td>{{ d.customer }}</td>
+              <td>{{ d.section }}</td>
+              <td>{{ d.qtyIssued }}</td>
+              <td>{{ d.vehicleNo || '-' }}</td>
+              <td>{{ d.fromLocation || '-' }}</td>
+              <td>{{ d.destination || '-' }}</td>
+              <td><span class="badge" [ngClass]="getBadgeClass(d.status)">{{ d.status }}</span></td>
+              <td>{{ d.dispatchDate | date:'dd-MM-yyyy' }}</td>
+              <td>
+                <button class="btn btn-sm btn-warning me-1" 
+                        (click)="updateDispatchStatus(d, 'In Transit')" 
+                        *ngIf="d.status === 'Pending'">
+                  🚚 In Transit
+                </button>
+                <button class="btn btn-sm btn-success" 
+                        (click)="updateDispatchStatus(d, 'Delivered')" 
+                        *ngIf="d.status === 'In Transit'">
+                  ✅ Delivered
+                </button>
+                <button class="btn btn-sm btn-info me-1" 
+                        (click)="editDispatch(d)" 
+                        *ngIf="d.status === 'Pending'">
+                  ✏️ Edit
+                </button>
+                <span *ngIf="d.status === 'Delivered'" class="badge bg-success">✅ Complete</span>
+              </td>
+            </tr>
+            <tr *ngIf="dispatches.length === 0">
+              <td colspan="11" class="text-center">No dispatch records found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dispatch Form Modal -->
+  <div *ngIf="showDispatchForm" class="modal" style="display: block; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">🚚 {{ isEditMode ? 'Edit' : 'Create' }} Dispatch Entry</h5>
+          <button type="button" class="btn-close" (click)="closeDispatchForm()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info" *ngIf="selectedPacking">
+            <strong>Packing:</strong> {{ selectedPacking.poNo }} | 
+            <strong>Customer:</strong> {{ selectedPacking.customer }}
+          </div>
+          
+          <form (ngSubmit)="saveDispatch()">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Dispatch ID *</label>
+                <input type="text" class="form-control" [(ngModel)]="dispatch.dispatchId" name="dispatchId" required readonly>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">PO No *</label>
+                <input type="text" class="form-control" [(ngModel)]="dispatch.poNo" name="poNo" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Customer *</label>
+                <input type="text" class="form-control" [(ngModel)]="dispatch.customer" name="customer" required>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Section *</label>
+                <input type="text" class="form-control" [(ngModel)]="dispatch.section" name="section" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Qty Issued (MT) *</label>
+                <input type="number" step="0.001" class="form-control" [(ngModel)]="dispatch.qtyIssued" name="qtyIssued" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Challan No</label>
+                <input type="text" class="form-control" [(ngModel)]="dispatch.challanNo" name="challanNo">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Vehicle No</label>
+                <input type="text" class="form-control" [(ngModel)]="dispatch.vehicleNo" name="vehicleNo">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">From Location</label>
+                <input type="text" class="form-control" [(ngModel)]="dispatch.fromLocation" name="fromLocation">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Destination</label>
+                <input type="text" class="form-control" [(ngModel)]="dispatch.destination" name="destination">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Dispatch Date *</label>
+                <input type="date" class="form-control" [(ngModel)]="dispatch.dispatchDate" name="dispatchDate" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Status *</label>
+                <select class="form-select" [(ngModel)]="dispatch.status" name="status">
+                  <option value="Pending">Pending</option>
+                  <option value="In Transit">In Transit</option>
+                  <option value="Delivered">Delivered</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closeDispatchForm()">Cancel</button>
+              <button type="submit" class="btn btn-success">✅ {{ isEditMode ? 'Update' : 'Create' }} Dispatch</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

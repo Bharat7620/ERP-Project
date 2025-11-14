@@ -1,0 +1,197 @@
+<div class="container-fluid">
+  <h2 class="my-4">Packing Management</h2>
+
+  <p *ngIf="message" class="alert alert-info">{{ message }}</p>
+
+  <!-- Action Buttons -->
+  <div class="d-flex justify-content-between mb-3">
+    <button class="btn btn-secondary" routerLink="/dispatch">← Back to Dispatch</button>
+    <div class="alert alert-info mb-0">
+      📦 Select completed production items to create packing entries.
+    </div>
+  </div>
+
+  <!-- Completed Production Items -->
+  <div class="card mb-4" *ngIf="completedProductions.length > 0">
+    <div class="card-body">
+      <h5 class="card-title">✅ Completed Production Items (Ready for Packing)</h5>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover table-sm">
+          <thead class="thead-dark">
+            <tr>
+              <th>Plan No</th>
+              <th>Date</th>
+              <th>Location</th>
+              <th>Mill</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let prod of completedProductions">
+              <td>{{ prod.planNumber }}</td>
+              <td>{{ prod.planDate | date:'dd-MM-yyyy' }}</td>
+              <td>{{ prod.location }}</td>
+              <td>{{ prod.mill }}</td>
+              <td>{{ getCustomerName(prod) }}</td>
+              <td>{{ prod.items?.length || 0 }} items</td>
+              <td>
+                <button class="btn btn-sm btn-success" (click)="openPackingFormFromProduction(prod)">
+                  📦 Create Packing
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Packing Table -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Packing Records</h5>
+      <div *ngIf="loading" class="text-center">Loading...</div>
+      <div class="table-responsive" *ngIf="!loading">
+        <table class="table table-striped table-hover table-sm">
+          <thead class="thead-dark">
+            <tr>
+              <th>Sr. No.</th>
+              <th>P.O.No.</th>
+              <th>Grade</th>
+              <th>Colour Code</th>
+              <th>Grade/Section</th>
+              <th>Section WT</th>
+              <th>Length</th>
+              <th>No. Of Pcs</th>
+              <th>Qty. in MT.</th>
+              <th>HEAT NO</th>
+              <th>Challan Qty.</th>
+              <th>Challan No.</th>
+              <th>Customer</th>
+              <th>Doc No</th>
+              <th>Date</th>
+              <th>Lorry No</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of packingItems">
+              <td>{{ p.srNo }}</td>
+              <td>{{ p.poNo }}</td>
+              <td>{{ p.grade }}</td>
+              <td>{{ p.colourCode }}</td>
+              <td>{{ p.gradeSection }}</td>
+              <td>{{ p.sectionWt }}</td>
+              <td>{{ p.length }}</td>
+              <td>{{ p.noOfPcs }}</td>
+              <td>{{ p.qtyInMt }}</td>
+              <td>{{ p.heatNo }}</td>
+              <td>{{ p.challanQty }}</td>
+              <td>{{ p.challanNo }}</td>
+              <td>{{ p.customer }}</td>
+              <td>{{ p.docNo }}</td>
+              <td>{{ p.packingDate | date:'dd-MM-yyyy' }}</td>
+              <td>{{ p.lorryNo }}</td>
+              <td><span class="badge" [ngClass]="getBadgeClass(p.status)">{{ p.status }}</span></td>
+              <td>
+                <button class="btn btn-sm btn-success" 
+                        (click)="goToDispatch(p)" 
+                        *ngIf="p.status === 'PACKED'">
+                  🚚 Go to Dispatch
+                </button>
+                <span *ngIf="p.status === 'DISPATCHED'" class="badge bg-info">✅ Dispatched</span>
+              </td>
+            </tr>
+            <tr *ngIf="packingItems.length === 0">
+              <td colspan="18" class="text-center">No packing records found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Packing Form Modal -->
+  <div *ngIf="showPackingForm" class="modal" style="display: block; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">📦 Create Packing Entry</h5>
+          <button type="button" class="btn-close" (click)="closePackingForm()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info" *ngIf="selectedProduction">
+            <strong>Production:</strong> {{ selectedProduction.planNumber }} | 
+            <strong>Location:</strong> {{ selectedProduction.location }}
+          </div>
+          
+          <form (ngSubmit)="savePacking()">
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Customer *</label>
+                <input type="text" class="form-control" [(ngModel)]="packing.customer" name="customer" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">PO No *</label>
+                <input type="text" class="form-control" [(ngModel)]="packing.poNo" name="poNo" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Grade *</label>
+                <input type="text" class="form-control" [(ngModel)]="packing.grade" name="grade" required>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Grade/Section *</label>
+                <input type="text" class="form-control" [(ngModel)]="packing.gradeSection" name="gradeSection" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Length *</label>
+                <input type="number" class="form-control" [(ngModel)]="packing.length" name="length" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">No. Of Pcs *</label>
+                <input type="number" class="form-control" [(ngModel)]="packing.noOfPcs" name="noOfPcs" required>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Qty in MT *</label>
+                <input type="number" step="0.001" class="form-control" [(ngModel)]="packing.qtyInMt" name="qtyInMt" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Heat No *</label>
+                <input type="text" class="form-control" [(ngModel)]="packing.heatNo" name="heatNo" required>
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label">Doc No *</label>
+                <input type="text" class="form-control" [(ngModel)]="packing.docNo" name="docNo" required>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Packing Date *</label>
+                <input type="date" class="form-control" [(ngModel)]="packing.packingDate" name="packingDate" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Colour Code</label>
+                <input type="text" class="form-control" [(ngModel)]="packing.colourCode" name="colourCode">
+              </div>
+            </div>
+            
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="closePackingForm()">Cancel</button>
+              <button type="submit" class="btn btn-success">✅ Create Packing</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

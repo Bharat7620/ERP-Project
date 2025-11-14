@@ -1,0 +1,65 @@
+<div class="inventory-container">
+  <h2 class="page-title">Raw Material Stock</h2>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="filter-group">
+      <label>Location</label>
+      <select [(ngModel)]="selectedLocation" (change)="applyFilters()">
+        <option value="">All</option>
+        <option *ngFor="let loc of locations" [value]="loc">{{ loc }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Material</label>
+      <select [(ngModel)]="selectedMaterial" (change)="applyFilters()">
+        <option value="">All</option>
+        <option *ngFor="let mat of materials" [value]="mat">{{ mat }}</option>
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn-refresh" (click)="fetchAllStock()">🔄 Refresh</button>
+      <button class="btn-reset" (click)="resetFilters()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Loading / Error -->
+  <div *ngIf="loading" class="loading">Loading stock data...</div>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <!-- Stock Table -->
+  <table *ngIf="!loading && filteredStock.length > 0" class="stock-table">
+    <thead>
+      <tr>
+        <th>Location</th>
+        <th>Material</th>
+        <th>Grade</th>
+        <th>Section</th>
+        <th>Width (mm)</th> <!-- ✅ Added -->
+        <th>Length (mm)</th>
+        <th>Type</th>
+        <th>Total Quantity</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let stock of filteredStock">
+        <td>{{ stock.location }}</td>
+        <td>{{ stock.material }}</td>
+        <td>{{ stock.grade }}</td>
+        <td>{{ stock.section }}</td>
+        <td>{{ stock.steelWidth || '-' }}</td> <!-- ✅ Display width -->
+        <td>{{ stock.length }}</td>
+        <td>{{ stock.type }}</td>
+        <td>{{ stock.totalQuantity }}</td>
+        <td>{{ formatDate(stock.lastUpdated) }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && filteredStock.length === 0" class="no-data">
+    No stock records found.
+  </div>
+</div>

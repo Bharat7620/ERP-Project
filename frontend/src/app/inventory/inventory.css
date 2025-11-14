@@ -1,0 +1,108 @@
+.inventory-container {
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #007bff;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.filter-group select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.btn-refresh,
+.btn-reset {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-refresh {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-reset {
+  background-color: #dc3545;
+  color: white;
+}
+
+.loading,
+.error,
+.no-data {
+  text-align: center;
+  margin-top: 20px;
+  font-weight: 500;
+}
+
+.error {
+  color: #d9534f;
+}
+
+.no-data {
+  color: #777;
+}
+
+.stock-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.stock-table th,
+.stock-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.stock-table th {
+  background-color: #f8f9fa;
+  color: #333;
+  font-weight: 600;
+}
+
+.stock-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.stock-table tr:hover {
+  background-color: #e9f5ff;
+}
